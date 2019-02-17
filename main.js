@@ -1,16 +1,10 @@
 var WebSocket = require('ws');
-const readline = require('readline');
 var blessed = require('blessed');
-
-const socket = new WebSocket("ws://localhost:4930/?username=NotMe");
-
-
+const socket = new WebSocket("ws://localhost:4930/?username=Edmund");
 // Create a screen object.
 var screen = blessed.screen({
     smartCSR: true,
   });
-  
-  screen.title = 'my window title';
   
 //Chat box
   var box = blessed.box({
@@ -67,6 +61,8 @@ var screen = blessed.screen({
         bg: 'green'
       }
     }
+
+
   });
   
   screen.append(box);
@@ -74,28 +70,46 @@ var screen = blessed.screen({
   screen.render();
   inputBar.focus();
 
-  socket.onopen = function opened(){
-    box.pushLine("Connected to server");
-  };
-
-  
 
 const log = (text) =>{
     box.pushLine(text);
     screen.render();
 }
 
+// Quit on Escape, q, or Control-C.
+screen.key(['escape', 'q', 'C-c'], function(ch, key) {
+  return process.exit(0);
+});
+
 //Sends message 
 inputBar.on('submit', (text) => {
-
-  var messagetosend =
+  if(text == "/userlist"){
+    var messagetosend =
+    {
+      from: "Edmund",
+      to: "",
+      kind: "userlist",
+      data: ""
+    }
+  }
+  else if(text == "/whoami"){
+    var messagetosend = {
+      from: "Edmund",
+      to: "",
+      kind: "whoami",
+      data: ""
+    }
+  }
+  else
   {
-      from: "NotMe",
+    var messagetosend =
+    {
+      from: "Edmund",
       to: "all",
       kind: "chat",
       data: text
+    }
   }
-
   socket.send(JSON.stringify(messagetosend));
   inputBar.focus();
   inputBar.clearValue();
@@ -119,41 +133,10 @@ socket.onclose = function closedmessage(){
 };
 
 //Upon opened connection fires this.
+
 socket.onopen = function opened(){
-  box.pushLine("Connected to server");
+  log("Connected to server");
 };
 
-
-//Allows the user to input messages and send to server.
-
-
-/*
-rl.on('line', (input) => {
-    
-    if(input == "userlist")
-    {
-        var messagetosend =
-        {
-            from: "NotMe",
-            to: "",
-            kind: "userlist",
-            data: ""
-        }
-
-        socket.send(JSON.stringify(messagetosend));
-    }
-    else
-    {
-        var messagetosend =
-        {
-            from: "NotMe",
-            to: "all",
-            kind: "chat",
-            data: input
-        }
-        socket.send(JSON.stringify(messagetosend));
-    }
-});
-*/
 
 
