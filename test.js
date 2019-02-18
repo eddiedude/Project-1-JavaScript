@@ -36,9 +36,10 @@ var box = blessed.box({
     left: "0%",
     width: '70%',
     height: '84%',
-    keys: true,
     mouse: true,
+    vi: true,
     alwaysScroll: true,
+    clickable: true,
     scrollable: true,
     scrollbar: {
         ch: ' ',
@@ -76,61 +77,88 @@ function login(){
   inputBar.focus();  
   log("Enter a username to use");
   inputBar.on('submit', function (text){
+    var array = text.split(">");
     if(!picked_username)
     {
       var username = text;
       var WSstring = ("ws://localhost:4930/?username=");
       var newstring = WSstring + username;
-      socket = new WebSocket(newstring); //socket.on('open') should be called
+      socket = new WebSocket(newstring); 
       Connection(socket);
-      picked_username = true;
       inputBar.focus();
+      inputBar.clearValue();
+      inputBar.render();
     }
     else
     {
-      if(text == '/userlist')
+      if(text == '/userlist') //If command is /userlist
       {
         var messagetosend =
         {
-          from: "Edmund",
+          from: username,
           to: "",
           kind: "userlist",
           data: ""
         }
+        socket.send(JSON.stringify(messagetosend));
+        inputBar.focus();
+        inputBar.clearValue();
+        screen.render();
       }
-      else if(text == "/whoami")
+      else if(text == "/whoami") //if command is /whoami
       {
         var messagetosend =
         {
-          from: "Edmund",
+          from: username,
           to: "",
           kind: "whoami",
           data: ""
         }
+        socket.send(JSON.stringify(messagetosend));
+        inputBar.focus();
+        inputBar.clearValue();
+        screen.render();
       }
-      else
+      else if(text == "/commands")
+      {
+        log("'/whoami' - Tells your username.\n'/userlist' - Gives the userlist of connected users in chat server.\n'/w>'username'>'message' - allows you to whisper to a sepcific user'");
+        box.setScrollPerc(100);
+        inputBar.focus();
+        inputBar.clearValue();
+        screen.render();
+      }
+      else if(array[0] == "/w")
       {
         var messagetosend =
         {
-          from: "Edmund",
+          from: username,
+          to: array[1],
+          kind: "direct",
+          data: array[2]
+        }
+        socket.send(JSON.stringify(messagetosend));
+        inputBar.focus();
+        inputBar.clearValue();
+        screen.render();
+      }
+      else //Sends message to entire server
+      {
+        var messagetosend =
+        {
+          from: username,
           to: "all",
           kind: "chat",
           data: text
         }
+        socket.send(JSON.stringify(messagetosend));
+        inputBar.focus();
+        inputBar.clearValue();
+        screen.render();
       }
-
-      socket.send(JSON.stringify(messagetosend));
-      inputBar.focus();
     }
   })
 }
-/*
-login().then(async function(){
-  await Connection(socket);
-}).catch(error =>{
- log(error);
-});
-*/
+
 login();
 
 function Connection(socket){
@@ -139,40 +167,28 @@ function Connection(socket){
   };
   socket.onmessage = function readmessage(messageEvent){
     var recievedmessage = JSON.parse(messageEvent.data);
-    log(recievedmessage.data);
+    if(recievedmessage.from == "GABServer")
+    {
+      log(recievedmessage.data);
+    }
+    else
+    {
+      log(recievedmessage.from + ": " + recievedmessage.data);
+    }
+
+    if(recievedmessage.data == 'Your username is invalid, please try again with the GET parameter "username". Usernames must '
+    + 'be alphanumeric between 3 and 10 characters. Terminating Connection.' || recievedmessage.data == 'Your username is taken, please try again with a different name. Terminating Connection.')
+    {
+      picked_username = false;
+    }
+    else
+    {
+      picked_username = true;
+    }
+    box.setScrollPerc(100);
+    screen.render();
   };
 };
-
-/*
-function login(){
-    log("Enter username");
-    inputBar.focus();
-    
-    promise.then(function(){
-      inputBar.on('submit', function (text) {
-        var username = text;
-        var WSstring = ("ws://localhost:4930/?username=");
-        var thestring = WSstring + username;
-        log("Before return string");
-        //CreateWS(thestring);
-        i = thestring;
-      })
-    }).then(function(data){  
-        log(data);
-        CreateWS(thestring);
-      }).catch(function(error){
-        console.log(error);
-      });
-}
-
-const promise = new Promise(function (resolve, reject){
-
-  resolve(log("HEllo"));
-  
-});
-*/
-
-
 
 // Quit on Escape, q, or Control-C.
 screen.key(['escape', 'q', 'C-c'], function(ch, key) {
