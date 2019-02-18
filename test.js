@@ -81,7 +81,7 @@ function login(){
     if(!picked_username)
     {
       var username = text;
-      var WSstring = ("ws://localhost:4930/?username=");
+      var WSstring = ("ws://10.226.71.146:4930/?username=");
       var newstring = WSstring + username;
       socket = new WebSocket(newstring); 
       Connection(socket);
@@ -135,6 +135,20 @@ function login(){
           to: array[1],
           kind: "direct",
           data: array[2]
+        }
+        socket.send(JSON.stringify(messagetosend));
+        inputBar.focus();
+        inputBar.clearValue();
+        screen.render();
+      }
+      else if(text == "/sans")
+      {
+        var messagetosend = 
+        {
+          from: username,
+          to: "all",
+          kind: "chat",
+          data: "░░░░░░░░░░▄▄▀▀▀▀▀▀▀▀▀▄▄░░░░░░░░░░\n░░░░░░░░░█░░░░░░░░░░░░░█░░░░░░░░░\n░░░░░░░░█░░░░░░░░░░▄▄▄░░█░░░░░░░░\n░░░░░░░░█░░▄▄▄░░▄░░███░░█░░░░░░░░\n░░░░░░░░▄█░▄░░░▀▀▀░░░▄░█▄░░░░░░░░\n░░░░░░░░█░░▀█▀█▀█▀█▀█▀░░█░░░░░░░░\n░░░░░░░░▄██▄▄▀▀▀▀▀▀▀▄▄██▄░░░░░░░░\n░░░░░░▄█░█▀▀█▀▀▀█▀▀▀█▀▀█░█▄░░░░░░\n░░░░░▄▀░▄▄▀▄▄▀▀▀▄▀▀▀▄▄▀▄▄░▀▄░░░░░\n░░░░░█░░░░▀▄░█▄░░░▄█░▄▀░░░░█░░░░░\n░░░░░░▀▄▄░█░░█▄▄▄▄▄█░░█░▄▄▀░░░░░░\n░░░░░░░░▀██▄▄███████▄▄██▀░░░░░░░░\n░░░░░░░░████████▀████████░░░░░░░░\n░░░░░░░▄▄█▀▀▀▀█░░░█▀▀▀▀█▄▄░░░░░░░\n░░░░░░░▀▄▄▄▄▄▀▀░░░▀▀▄▄▄▄▄▀░░﻿░░░░░"
         }
         socket.send(JSON.stringify(messagetosend));
         inputBar.focus();
